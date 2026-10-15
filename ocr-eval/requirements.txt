@@ -1,0 +1,6 @@
+paddleocr==3.7.0
+paddlex==3.7.2
+fastapi==0.143.0
+uvicorn==0.54.0
+pillow==12.3.0
+numpy==2.3.5

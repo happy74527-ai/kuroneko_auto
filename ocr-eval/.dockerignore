@@ -1,0 +1,9 @@
+# 只需要程式碼和 requirements.txt；虛擬環境、模型快取、題庫、log 都不要送進 docker build
+.venv/
+.venv-gpu/
+.hf-cache/
+.model-cache/
+__pycache__/
+*.sqlite
+*.log
+images/

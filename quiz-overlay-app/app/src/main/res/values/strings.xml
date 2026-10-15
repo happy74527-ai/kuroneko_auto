@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">答題浮窗</string>
+    <string name="a11y_desc">用於在信心值超過門檻時，自動點擊模型選出的選項。不會讀取或上傳其他畫面內容。</string>
+</resources>

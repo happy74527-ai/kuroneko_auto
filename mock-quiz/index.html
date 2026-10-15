@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock Quiz</title>
+<style>
+  body { margin: 0; font-family: sans-serif; background: #2b3a67; color: #fff; display: flex; flex-direction: column; height: 100vh; }
+  header { display: flex; justify-content: space-between; padding: 16px 20px; font-size: 18px; }
+  #q { margin: 40px 20px 0; padding: 24px; background: #fff; color: #222; border-radius: 16px; font-size: 22px; min-height: 120px; white-space: pre-line; }
+  #opts { margin-top: auto; margin-bottom: 120px; padding: 0 20px; }
+  button { display: block; width: 100%; margin: 14px 0; padding: 20px; font-size: 20px; border: 0; border-radius: 14px; background: #f5c542; color: #222; }
+  button.right { background: #3ec46d; } button.wrong { background: #e05555; }
+</style>
+</head>
+<body>
+<header><span>玩家 A　<b id="score">0</b></span><span id="round"></span></header>
+<div id="q"></div>
+<div id="opts"></div>
+<script>
+const QUIZ = [
+  ["台灣最高的山是哪一座？", ["雪山", "玉山", "合歡山", "阿里山"], 1],
+  ["「源氏物語」の作者は誰ですか？", ["清少納言", "紫式部", "和泉式部", "小野小町"], 1],
+  ["What is the capital of Canada?", ["Toronto", "Vancouver", "Montreal", "Ottawa"], 3],
+  ["人體中最大的器官是什麼？", ["肝臟", "皮膚", "大腸", "肺"], 1],
+  ["日本で一番面積が大きい都道府県は？", ["岩手県", "北海道", "長野県", "福島県"], 1],
+  ["Which planet is known as the Red Planet?", ["Venus", "Jupiter", "Mars", "Mercury"], 2],
+  ["《紅樓夢》的作者是誰？", ["施耐庵", "羅貫中", "曹雪芹", "吳承恩"], 2],
+  ["江戸幕府を開いたのは誰ですか？", ["織田信長", "豊臣秀吉", "徳川家康", "足利尊氏"], 2],
+  ["77+96=?", ["205", "141", "173", "237"], 2],
+  ["次のうち、石川さゆりのヒット曲のタイトルはどれ？", ["伊賀越え", "白川越え", "丹波越え", "天城越え"], 3],
+  ["下列何者為著名的「美國高爾夫選手」\n?", ["麥可喬丹", "老虎伍茲", "費德勒", "梅西"], 1],
+];
+let i = 0, score = 0, shownAt = 0;
+const log = [];
+function show() {
+  if (i >= QUIZ.length) {
+    document.getElementById("q").textContent = `結束：${score} / ${QUIZ.length}`;
+    document.getElementById("opts").innerHTML = "";
+    fetch("/result", { method: "POST", body: JSON.stringify(log) }).catch(() => {});
+    return;
+  }
+  const [q, opts] = QUIZ[i];
+  document.getElementById("round").textContent = `第 ${i + 1} 題`;
+  document.getElementById("q").textContent = q;
+  const box = document.getElementById("opts");
+  box.innerHTML = "";
+  opts.forEach((o, k) => {
+    const b = document.createElement("button");
+    b.textContent = o;
+    b.onclick = () => pick(k, b);
+    box.appendChild(b);
+  });
+  shownAt = performance.now();
+}
+function pick(k, b) {
+  const correct = QUIZ[i][2];
+  const ms = Math.round(performance.now() - shownAt);
+  log.push({ q: QUIZ[i][0], picked: QUIZ[i][1][k], ok: k === correct, ms });
+  if (k === correct) { score++; b.classList.add("right"); } else { b.classList.add("wrong"); }
+  document.getElementById("score").textContent = score;
+  document.querySelectorAll("button").forEach(x => x.onclick = null);
+  setTimeout(() => { i++; show(); }, 1500);
+}
+show();
+</script>
+</body>
+</html>

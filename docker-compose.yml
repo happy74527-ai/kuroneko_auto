@@ -1,0 +1,52 @@
+# PC 端的兩個伺服器（需要 NVIDIA 顯示卡；Windows 用 Docker Desktop＋WSL2 即可，驅動要支援 CUDA 12.8）。
+#   docker compose up -d --build     第一次建置約 10–20 分鐘（PyTorch、CUDA 套件較大）
+#   docker compose logs -f d3        看 log
+#   docker compose down              停止
+# 設定在 .env（複製 .env.example）。主機上對外的位址／埠號用 D3_HOST/D3_PORT、OCR_HOST/OCR_PORT。
+services:
+  d3:
+    build: ./pc-server
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      QBANK_DATA_DIR: /data
+      HF_HOME: /cache/hf
+    ports:
+      - "${D3_HOST:-0.0.0.0}:${D3_PORT:-8765}:8765"
+    volumes:
+      # 題庫：data/qbank.jsonl.gz（git 附的資料）＋ data/qbank.sqlite（執行中的題庫，第一次啟動自動匯入）
+      - ./data:/data
+      # d3 模型（約 9GB）；和原生腳本共用同一個快取，不必重新下載
+      - ./pc-server/.hf-cache:/cache/hf
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  ocr:
+    build: ./ocr-eval
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # 容器內固定 8767；主機上的埠號由下面的 ports 決定
+      OCR_HOST: 0.0.0.0
+      OCR_PORT: "8767"
+      PADDLE_PDX_CACHE_HOME: /cache/paddle
+    ports:
+      - "${OCR_HOST:-0.0.0.0}:${OCR_PORT:-8767}:8767"
+    volumes:
+      - ./ocr-eval/.model-cache:/cache/paddle
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped

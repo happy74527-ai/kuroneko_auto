@@ -1,0 +1,33 @@
+# 設定（含密碼）：只提交 .env.example
+.env
+
+# Python 環境與快取
+.venv/
+.venv-gpu/
+__pycache__/
+*.pyc
+
+# 模型快取（第一次執行會自動下載）
+pc-server/.hf-cache/
+ocr-eval/.model-cache/
+
+# 題庫：執行中的 SQLite 不提交，提交的是 data/qbank.jsonl.gz（用 pc-server/qbank_io.py export 更新）
+pc-server/*.sqlite
+data/*.sqlite
+pc-server/*.sqlite-journal
+data/*.sqlite-journal
+
+# 專案內的 JDK / Android SDK / 模擬器（scripts/setup-android-sdk.sh 會重建）
+.tools/
+
+# Android 編譯產物
+quiz-overlay-app/.gradle/
+quiz-overlay-app/app/build/
+quiz-overlay-app/build/
+quiz-overlay-app/local.properties
+*.apk
+
+# 執行時產生的檔案
+*.log
+mock-quiz/result.json
+ocr-eval/images/

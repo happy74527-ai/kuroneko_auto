@@ -1,0 +1,4 @@
+# 換行固定：shell 腳本與 Dockerfile 在 Git Bash / Linux 容器裡遇到 CRLF 會壞掉
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.gz binary
