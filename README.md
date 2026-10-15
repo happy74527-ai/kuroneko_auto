@@ -5,7 +5,9 @@ Android 浮窗 App：持續擷取手機螢幕，讀出題目和選項，交給�
 
 > 架構是「手機擷取＋PC 推論」：OCR 與決策模型跑在 PC 的 NVIDIA 顯示卡上（docker compose），手機要連得到這台 PC（同一個區網、Tailscale，或對外開放）。
 
-**目錄**：[目前進度](#目前進度) · [架構](#架構) · [使用教學（從零開始）](#使用教學從零開始) · [常見問題](#常見問題) · [設定參考](#設定參考) · [題庫](#題庫) · [測試](#測試) · [開發筆記](#開發筆記踩過的坑)
+> 題庫資料來自 [黒猫のウィズ問題集](https://kuronekonowiz.main.jp/)，詳見 [資料來源與聲明](#資料來源與聲明)。
+
+**目錄**：[目前進度](#目前進度) · [架構](#架構) · [使用教學（從零開始）](#使用教學從零開始) · [常見問題](#常見問題) · [設定參考](#設定參考) · [題庫](#題庫) · [測試](#測試) · [開發筆記](#開發筆記踩過的坑) · [資料來源與聲明](#資料來源與聲明)
 
 ---
 
@@ -280,7 +282,7 @@ bash scripts/start-emulator.sh      # 視窗會出現在桌面
 
 ## 題庫
 
-- 來源：[黒猫のウィズ問題集](https://kuronekonowiz.main.jp/)（約 10 萬題，網站註明歡迎自由使用）。**資料屬於該網站，請勿公開散布；repo 請維持私人（private）。**
+- 來源：[黒猫のウィズ問題集](https://kuronekonowiz.main.jp/)（約 10 萬題）。題目與答案的整理成果屬於該網站，見 [資料來源與聲明](#資料來源與聲明)。
 - `data/qbank.jsonl.gz`：第一次啟動時若 `data/qbank.sqlite` 不存在或是空的，會自動匯入。
 - 更新附帶的資料：`pc-server\.venv\Scripts\python pc-server\qbank_io.py export`（或 `docker compose exec d3 python qbank_io.py export`），再提交 `data/qbank.jsonl.gz`。
 - 背景撈取查過的關鍵字有記錄，可中斷續撈；網站每次搜尋最多回 100 題，滿 100 題時會再按類型分開查。
@@ -312,3 +314,23 @@ python pc-server/eval_quiz.py                          # 30 題中日英常識�
 - **選類型**：日文版「アニメゲーム」是藝術字，OCR 讀不出來，所以面板靠位置＋圓形圖示顏色辨認；兩版上方黑邊高度不同，顏色條和怪物位置從面板位置往上推算；火屬性圖示的橘色火焰色相約 20–30 度也算紅。
 - **網站題庫**：回應是 chunked 編碼，要自己解碼（否則 3% 的資料會混進亂碼）；結果 0.8 秒就送完，但網站會拖 3 秒才關連線，讀到「N問見つかりました」的 N 題就提早斷線。
 - **埠號**：8000 常被 VS Code 佔用，所以 d3 用 8765。
+
+## 資料來源與聲明
+
+**題庫**
+
+- `data/qbank.jsonl.gz` 與背景撈取、答題當下線上查詢的資料，全部來自 **[黒猫のウィズ問題集](https://kuronekonowiz.main.jp/)**。題目與正解的收集、整理都是該網站的成果，在此致謝。
+- 本專案只是把查詢結果存在本機，方便離線比對，不是原始資料的擁有者。若該網站要求停止使用或移除，會立即配合。
+- 背景撈取每 3 秒才查一次，避免對網站造成負擔；題庫夠完整後請在 `.env` 設 `QBANK_CRAWL=0`。
+
+**遊戲**
+
+- 「魔法使いと黒猫のウィズ」「黑貓維茲」及遊戲中的題目、圖像，著作權屬於 **株式会社コロプラ（COLOPL, Inc.）**。
+- 本專案是個人製作的非官方工具，與 COLOPL 及上述網站都沒有任何關係。
+- 自動作答可能違反遊戲的使用條款，使用者須自行承擔帳號被停權等風險。本專案僅供學習與研究用途。
+
+**使用的模型與套件**
+
+- 決策模型：[vllm-sr/d3-mini](https://huggingface.co/vllm-sr/d3-mini)（vLLM Semantic Router），授權依其模型頁說明。
+- OCR：[PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) PP-OCRv6（Apache-2.0）；手機端備援為 Google ML Kit Text Recognition。
+- 日文讀音與模糊比對：[pykakasi](https://codeberg.org/miurahr/pykakasi)、[RapidFuzz](https://github.com/rapidfuzz/RapidFuzz)。
